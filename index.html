@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sınav Takvimi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: araç çubuğu → sıradaki sınavlar → her hafta için saat ekseni + 7 gün sütunu, sınavlar dakikaya göre konumlanan renkli bloklar */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --fg:#17202e; --muted:#5d6878; --line:#dde2ea; --line-strong:#b9c1cd;
+  --accent:#2f5fd0; --accent-fg:#ffffff; --accent-soft:#e3eafb; --today:#fff7d6;
+  --c1:#f7d64a; --c1t:#3a2f00; --c2:#7cc06a; --c2t:#10300a; --c3:#6fa3e8; --c3t:#0b2246;
+  --c4:#f08a4b; --c4t:#3d1500; --c5:#ef5b5b; --c5t:#3d0606; --c6:#4fd3e6; --c6t:#032f36;
+  --shadow:0 1px 2px rgba(20,30,50,.08),0 6px 20px rgba(20,30,50,.06);
+  --f-ui:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#11151c; --surface:#181e27; --fg:#e7ebf2; --muted:#98a3b4; --line:#262e3a; --line-strong:#3a4452;
+  --accent:#7aa2ff; --accent-fg:#0b1220; --accent-soft:#1d2840; --today:#2a2614;
+  --c1:#d9b92c; --c2:#5fa451; --c3:#4f86cf; --c4:#d6703a; --c5:#d24a4a; --c6:#33b4c6;
+  --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark}}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-ui);font-size:15px;line-height:1.45}
+[hidden]{display:none!important}
+.wrap{max-width:1280px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+h1{margin:0;font-size:1.75rem;font-weight:800;letter-spacing:-.02em}
+.sub{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.field small{color:var(--muted);font-size:.78rem}
+input,select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:7px 10px;min-width:0}
+input[readonly]{background:var(--bg)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);padding:8px 14px;font-weight:600}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+button.danger{color:var(--c5);border-color:var(--c5);background:transparent}
+button.link{border:0;background:none;padding:0;color:var(--muted);text-decoration:underline;font-weight:500}
+
+.status{display:inline-flex;align-items:center;gap:6px;margin:8px 0 0;font-size:.78rem;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.status .dot{width:8px;height:8px;border-radius:50%;background:var(--line-strong)}
+.status.ok .dot{background:var(--c2)} .status.busy .dot{background:var(--c1)} .status.bad .dot{background:var(--c5)}
+
+.upcoming{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.up{display:flex;gap:10px;align-items:stretch;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;text-align:left}
+.up .sw{width:6px;border-radius:3px;flex:none}
+.up .t{font-weight:700}
+.up .d{font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.up .left{margin-left:auto;text-align:right;font-family:var(--f-num);font-size:.78rem;color:var(--muted);white-space:nowrap}
+.up .left b{display:block;font-size:1.15rem;color:var(--fg)}
+.up.past{opacity:.5}
+.empty{grid-column:1/-1;background:var(--surface);border:1px dashed var(--line-strong);border-radius:10px;padding:14px 16px;color:var(--muted);margin:0}
+
+.week{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.week-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.week-h h2{margin:0;font-size:1rem;font-weight:700}
+.week-h span{color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
+.scroller{overflow-x:auto}
+.grid{display:grid;grid-template-columns:64px repeat(7,minmax(110px,1fr));min-width:840px}
+.dh{padding:8px 6px;text-align:center;border-left:1px solid var(--line);border-bottom:1px solid var(--line-strong);background:var(--accent-soft)}
+.dh .n{font-weight:700;font-size:.9rem}
+.dh .dt{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.dh.today{background:var(--today)}
+.dh.corner{background:var(--surface);border-left:0}
+.times{position:relative}
+.times div{position:absolute;left:0;right:6px;text-align:right;font-family:var(--f-num);font-size:.68rem;color:var(--muted);padding-top:2px}
+.col{position:relative;border-left:1px solid var(--line);background-image:linear-gradient(var(--line) 1px,transparent 1px);background-repeat:repeat-y}
+body.editor .col{cursor:copy}
+.col.today{background-color:var(--today)}
+.col.weekend{background-color:var(--bg)}
+.blk{position:absolute;left:3px;right:3px;border-radius:6px;padding:4px 6px;overflow:hidden;cursor:pointer;border:1px solid rgba(0,0,0,.12);display:flex;flex-direction:column;gap:1px;text-align:left;font:inherit;line-height:1.2}
+.blk .bt{font-weight:800;font-size:.84rem}
+.blk .bs{font-family:var(--f-num);font-size:.68rem;font-weight:700;opacity:.85}
+.blk .bn{font-size:.72rem;font-weight:600;opacity:.9}
+.blk:hover{box-shadow:0 0 0 2px var(--fg)}
+.k1{background:var(--c1);color:var(--c1t)} .k2{background:var(--c2);color:var(--c2t)} .k3{background:var(--c3);color:var(--c3t)}
+.k4{background:var(--c4);color:var(--c4t)} .k5{background:var(--c5);color:var(--c5t)} .k6{background:var(--c6);color:var(--c6t)}
+.now{position:absolute;left:0;right:0;height:2px;background:var(--c5);pointer-events:none}
+.now::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--c5)}
+
+footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;color:var(--muted);font-size:.85rem}
+
+.overlay{position:fixed;inset:0;background:rgba(10,15,25,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{background:var(--surface);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(460px,100%);padding:20px;display:flex;flex-direction:column;gap:14px;max-height:100%;overflow:auto}
+.modal h3{margin:0;font-size:1.15rem}
+.modal p{margin:0;color:var(--muted);font-size:.88rem}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px}
+@media (max-width:420px){.row3{grid-template-columns:1fr 1fr}.row3 .field:first-child{grid-column:1/-1}}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatches button{width:30px;height:30px;padding:0;border-radius:50%;border:2px solid transparent}
+.swatches button[aria-pressed="true"]{border-color:var(--fg)}
+.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.actions .sp{margin-right:auto}
+.err{color:var(--c5);font-size:.85rem;margin:0}
+@media (prefers-reduced-motion:no-preference){.blk{transition:box-shadow .12s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Sınav Takvimi</h1>
+      <p class="sub" id="sub">Güz 2026</p>
+      <p class="status" id="status"><span class="dot"></span><span id="statusText">Yükleniyor…</span></p>
+    </div>
+    <div class="tools">
+      <div class="field"><label for="from">Başlangıç</label><input type="date" id="from"></div>
+      <div class="field"><label for="to">Bitiş</label><input type="date" id="to"></div>
+      <button class="primary" id="addBtn" type="button" hidden>+ Sınav ekle</button>
+    </div>
+  </header>
+
+  <section class="upcoming" id="upcoming" aria-label="Sıradaki sınavlar"></section>
+  <div id="weeks" style="display:flex;flex-direction:column;gap:20px"></div>
+
+  <footer>
+    <span>Telefonda takvimi yana kaydırabilirsin.</span>
+    <button class="link" id="editModeBtn" type="button">Düzenleme modu</button>
+  </footer>
+</div>
+
+<!-- Sınav formu -->
+<div class="overlay" id="ov" hidden>
+  <form class="modal" id="form" autocomplete="off">
+    <h3 id="mTitle">Sınav ekle</h3>
+    <div class="field"><label for="fTitle">Ders</label><input id="fTitle" required placeholder="ör. EC 2205"></div>
+    <div class="row3">
+      <div class="field"><label for="fDate">Tarih</label><input type="date" id="fDate" required></div>
+      <div class="field"><label for="fStart">Başlangıç</label><input type="time" id="fStart" required step="300"></div>
+      <div class="field"><label for="fEnd">Bitiş</label><input type="time" id="fEnd" required step="300"></div>
+    </div>
+    <div class="field"><label for="fNote">Not</label><input id="fNote" placeholder="ör. Gözetmensiz, T-304"></div>
+    <div class="field" id="swField"><label>Renk</label><div class="swatches" id="sw"></div></div>
+    <p class="err" id="err" hidden></p>
+    <div class="actions">
+      <button type="button" class="danger sp" id="delBtn" hidden>Sil</button>
+      <button type="button" id="cancelBtn">Vazgeç</button>
+      <button type="submit" class="primary" id="saveBtn">Kaydet</button>
+    </div>
+  </form>
+</div>
+
+<!-- Düzenleme modu ayarları -->
+<div class="overlay" id="ovCfg" hidden>
+  <form class="modal" id="cfgForm" autocomplete="off">
+    <h3>Düzenleme modu</h3>
+    <p>Sadece takvimin sahibi için. Token yalnızca bu tarayıcıda saklanır, sayfayı ziyaret edenlere gitmez.</p>
+    <div class="row2">
+      <div class="field"><label for="cOwner">GitHub kullanıcı adı</label><input id="cOwner" required></div>
+      <div class="field"><label for="cRepo">Depo adı</label><input id="cRepo" required></div>
+    </div>
+    <div class="field"><label for="cToken">Erişim token'ı</label><input id="cToken" type="password" required placeholder="github_pat_…"><small>Sadece bu depoya, “Contents: Read and write” izniyle.</small></div>
+    <p class="err" id="cErr" hidden></p>
+    <div class="actions">
+      <button type="button" class="danger sp" id="logoutBtn" hidden>Düzenlemeyi kapat</button>
+      <button type="button" id="cCancel">Vazgeç</button>
+      <button type="submit" class="primary">Bağlan</button>
+    </div>
+  </form>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const DAY0 = 8*60+40, DAY1 = 21*60+30, PX = 0.95; // 08:40–21:30
+const DAYS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
+const MONTHS = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+const CFG_KEY = "sinav-takvimi-github";
+const DATA_FILE = "exams.json", BRANCH = "main";
+
+let state = {from:"2026-10-26", to:"2026-11-15", exams:[]};
+let loaded = false, editor = false, sha = null;
+let cfg = loadCfg();
+
+/* ---------- yardımcılar ---------- */
+const pad = n => String(n).padStart(2,"0");
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse = s => { const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
+const mins = t => { const [h,m]=t.split(":").map(Number); return h*60+m; };
+const hm = m => `${pad(Math.floor(m/60))}:${pad(m%60)}`;
+const mondayOf = d => { const x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; };
+const addDays = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+const fmt = d => `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const b64enc = s => { const b = new TextEncoder().encode(s); let bin=""; b.forEach(x=>bin+=String.fromCharCode(x)); return btoa(bin); };
+const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g,"")), c=>c.charCodeAt(0)));
+function setStatus(kind, text){ $("status").className = "status " + kind; $("statusText").textContent = text; }
+
+function loadCfg(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; }catch(e){ return {}; } }
+function saveCfg(){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }catch(e){} }
+function guessRepo(){
+  const h = location.hostname;
+  if(h.endsWith(".github.io")){
+    const owner = h.split(".")[0];
+    const seg = location.pathname.split("/").filter(Boolean)[0];
+    return {owner, repo: seg && !seg.endsWith(".html") ? seg : h};
+  }
+  return {owner:"", repo:""};
+}
+
+/* ---------- GitHub API ---------- */
+const apiUrl = () => `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${DATA_FILE}`;
+async function gh(method, url, body){
+  const r = await fetch(url, {method, headers:{
+    "Authorization":"Bearer "+cfg.token, "Accept":"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28",
+    ...(body?{"Content-Type":"application/json"}:{})}, body: body?JSON.stringify(body):undefined, cache:"no-store"});
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok) throw {status:r.status, message:j.message||r.statusText};
+  return j;
+}
+async function readFromApi(){
+  const j = await gh("GET", apiUrl()+"?ref="+BRANCH);
+  sha = j.sha; return JSON.parse(b64dec(j.content));
+}
+async function readPublic(){
+  const r = await fetch(DATA_FILE+"?t="+Date.now(), {cache:"no-store"});
+  if(!r.ok) throw {status:r.status};
+  return r.json();
+}
+
+let queue = Promise.resolve();
+function commit(message){
+  queue = queue.then(() => doCommit(message, true));
+  return queue;
+}
+async function doCommit(message, retry){
+  setStatus("busy","Kaydediliyor…");
+  const content = b64enc(JSON.stringify(state, null, 2) + "\n");
+  try{
+    const j = await gh("PUT", apiUrl(), {message, content, sha, branch:BRANCH});
+    sha = j.content.sha;
+    setStatus("ok","Kaydedildi · herkeste 1-2 dakika içinde görünür");
+  }catch(e){
+    if(retry && (e.status===409 || e.status===422)){
+      try{ const j = await gh("GET", apiUrl()+"?ref="+BRANCH); sha = j.sha; return doCommit(message, false); }catch(_){}
+    }
+    if(e.status===401 || e.status===403) setStatus("bad","Kaydedilemedi: token geçersiz ya da yazma izni yok");
+    else setStatus("bad","Kaydedilemedi: bağlantını kontrol edip tekrar dene");
+  }
+}
+
+/* ---------- yükleme ---------- */
+async function load(){
+  editor = !!(cfg.token && cfg.owner && cfg.repo);
+  document.body.classList.toggle("editor", editor);
+  $("addBtn").hidden = !editor;
+  $("editModeBtn").textContent = editor ? "Düzenleme modu açık" : "Düzenleme modu";
+  try{
+    if(editor){
+      try{ state = await readFromApi(); setStatus("ok","Düzenleme modu · değişiklikler GitHub'a kaydedilir"); }
+      catch(e){
+        if(e.status===404){ sha = null; state.exams = state.exams||[]; setStatus("busy","exams.json bulunamadı · ilk kayıtta oluşturulacak"); }
+        else { editor = false; document.body.classList.remove("editor"); $("addBtn").hidden = true;
+               state = await readPublic(); setStatus("bad","Token ile bağlanılamadı · sadece görüntüleme"); }
+      }
+    } else {
+      state = await readPublic();
+      setStatus("ok","Güncel takvim");
+    }
+  }catch(e){
+    setStatus("bad","Takvim verisi yüklenemedi · sayfayı yenile");
+  }
+  state.exams = Array.isArray(state.exams) ? state.exams : [];
+  state.from = state.from || "2026-10-26"; state.to = state.to || "2026-11-15";
+  loaded = true;
+  $("from").value = state.from; $("to").value = state.to;
+  render();
+}
+
+/* ---------- çizim ---------- */
+function render(){
+  const today = iso(new Date());
+  const now = new Date(), nowMin = now.getHours()*60+now.getMinutes();
+  $("sub").textContent = editor ? "Boş bir yere tıkla, sınav ekle; bloğa tıkla, düzenle." : "Bir sınava tıklayarak ayrıntısını görebilirsin.";
+
+  const sorted = [...state.exams].sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
+  $("upcoming").innerHTML = !sorted.length
+    ? `<p class="empty">${loaded ? (editor ? "Henüz sınav yok. Takvimde boş bir yere tıklayarak ilk sınavı ekle." : "Henüz sınav eklenmemiş.") : "Sınavlar yükleniyor…"}</p>`
+    : sorted.map(e=>{
+      const d = parse(e.date);
+      const diff = Math.round((d - parse(today))/864e5);
+      const past = diff<0 || (diff===0 && mins(e.end)<nowMin);
+      const left = past ? "geçti" : diff===0 ? "<b>Bugün</b>" : `<b>${diff}</b>gün`;
+      return `<button type="button" class="up${past?" past":""}" data-id="${esc(e.id)}">
+        <span class="sw k${e.color}"></span>
+        <span><span class="t">${esc(e.title)}</span><br><span class="d">${fmt(d)} ${DAYS[(d.getDay()+6)%7].slice(0,3)} · ${e.start}–${e.end}</span></span>
+        <span class="left">${left}</span></button>`;
+    }).join("");
+
+  const H = (DAY1-DAY0)*PX;
+  const start = mondayOf(parse(state.from));
+  let end = parse(state.to); if(end < start) end = addDays(start,6);
+  let html = "", wk = 0;
+  for(let m = start; m <= end && wk < 12; m = addDays(m,7), wk++){
+    const sun = addDays(m,6);
+    let cols = `<div class="dh corner"></div>`;
+    for(let i=0;i<7;i++){ const d=addDays(m,i); cols += `<div class="dh${iso(d)===today?" today":""}"><div class="n">${DAYS[i]}</div><div class="dt">${fmt(d)}</div></div>`; }
+    let times = "";
+    for(let t=DAY0; t<DAY1; t+=60) times += `<div style="top:${(t-DAY0)*PX}px">${hm(t)}</div>`;
+    cols += `<div class="times" style="height:${H}px">${times}</div>`;
+    for(let i=0;i<7;i++){
+      const ds = iso(addDays(m,i));
+      let inner = state.exams.filter(e=>e.date===ds).map(e=>{
+        const s=Math.max(mins(e.start),DAY0), en=Math.min(Math.max(mins(e.end),s+20),DAY1);
+        return `<button type="button" class="blk k${e.color}" data-id="${esc(e.id)}" style="top:${(s-DAY0)*PX}px;height:${(en-s)*PX-2}px">
+          <span class="bt">${esc(e.title)}</span><span class="bs">${e.start}–${e.end}</span>${e.note?`<span class="bn">${esc(e.note)}</span>`:""}</button>`;
+      }).join("");
+      if(ds===today && nowMin>DAY0 && nowMin<DAY1) inner += `<div class="now" style="top:${(nowMin-DAY0)*PX}px"></div>`;
+      cols += `<div class="col${ds===today?" today":""}${i>4?" weekend":""}" data-date="${ds}" style="height:${H}px;background-size:100% ${60*PX}px">${inner}</div>`;
+    }
+    const count = state.exams.filter(e=>e.date>=iso(m)&&e.date<=iso(sun)).length;
+    html += `<section class="week"><div class="week-h"><h2>${wk+1}. hafta</h2><span>${fmt(m)} – ${fmt(sun)} · ${count} sınav</span></div>
+      <div class="scroller"><div class="grid">${cols}</div></div></section>`;
+  }
+  $("weeks").innerHTML = html;
+}
+
+/* ---------- sınav formu ---------- */
+let editing = null, pickColor = 1;
+function swatches(){
+  $("sw").innerHTML = [1,2,3,4,5,6].map(c=>`<button type="button" class="k${c}" aria-label="Renk ${c}" aria-pressed="${c===pickColor}" data-c="${c}"></button>`).join("");
+}
+$("sw").addEventListener("click",e=>{ const b=e.target.closest("[data-c]"); if(b){pickColor=+b.dataset.c;swatches();} });
+function resetDel(){ $("delBtn").dataset.confirm=""; $("delBtn").textContent="Sil"; }
+function openModal(ex, preset={}){
+  editing = ex || null; resetDel();
+  const ro = !editor;
+  $("mTitle").textContent = ro ? "Sınav ayrıntısı" : (ex ? "Sınavı düzenle" : "Sınav ekle");
+  ["fTitle","fDate","fStart","fEnd","fNote"].forEach(id=>$(id).readOnly = ro);
+  $("fTitle").value = ex?ex.title:""; $("fNote").value = ex?(ex.note||""):"";
+  $("fDate").value = ex?ex.date:(preset.date||state.from);
+  $("fStart").value = ex?ex.start:(preset.start||"10:40");
+  $("fEnd").value = ex?ex.end:(preset.end||"11:30");
+  pickColor = ex?ex.color:((state.exams.length%6)+1);
+  $("swField").hidden = ro; $("saveBtn").hidden = ro;
+  $("delBtn").hidden = ro || !ex; $("err").hidden = true;
+  $("cancelBtn").textContent = ro ? "Kapat" : "Vazgeç";
+  if(ro && ex && !ex.note) $("fNote").value = "—";
+  swatches(); $("ov").hidden = false;
+  (ro ? $("cancelBtn") : $("fTitle")).focus();
+}
+const closeModal = () => { $("ov").hidden = true; };
+$("cancelBtn").onclick = closeModal;
+$("ov").addEventListener("click",e=>{ if(e.target.id==="ov") closeModal(); });
+$("delBtn").onclick = () => {
+  if($("delBtn").dataset.confirm!=="1"){ $("delBtn").dataset.confirm="1"; $("delBtn").textContent="Emin misin? Sil"; return; }
+  const gone = editing;
+  state.exams = state.exams.filter(x=>x!==gone); render(); closeModal();
+  commit(`${gone.title} sınavı silindi`);
+};
+$("form").addEventListener("submit",e=>{
+  e.preventDefault();
+  if(!editor) return closeModal();
+  const v = {title:$("fTitle").value.trim(), date:$("fDate").value, start:$("fStart").value, end:$("fEnd").value, note:$("fNote").value.trim(), color:pickColor};
+  if(mins(v.end) <= mins(v.start)){ $("err").textContent="Bitiş saati başlangıçtan sonra olmalı."; $("err").hidden=false; return; }
+  let msg;
+  if(editing){ Object.assign(editing,v); msg = `${v.title} sınavı güncellendi`; }
+  else { state.exams.push({id:Date.now().toString(36),...v}); msg = `${v.title} sınavı eklendi`; }
+  render(); closeModal(); commit(msg);
+});
+$("addBtn").onclick = () => openModal(null);
+document.addEventListener("click",e=>{
+  if(!$("ov").hidden || !$("ovCfg").hidden) return;
+  const b = e.target.closest("[data-id]");
+  if(b){ openModal(state.exams.find(x=>x.id===b.dataset.id)); return; }
+  const c = e.target.closest(".col");
+  if(c && editor){
+    const y = e.clientY - c.getBoundingClientRect().top;
+    const t = DAY0 + Math.floor(y/PX/60)*60; // saat dilimi başına (…:40) yasla
+    openModal(null,{date:c.dataset.date,start:hm(t),end:hm(Math.min(t+50,DAY1))});
+  }
+});
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal(); $("ovCfg").hidden = true; } });
+
+/* ---------- tarih aralığı ---------- */
+let rangeTimer = null;
+function onRange(){
+  const f = $("from").value, t = $("to").value; if(!f || !t) return;
+  state.from = f; state.to = t; render();
+  if(editor){ clearTimeout(rangeTimer); rangeTimer = setTimeout(()=>commit("Tarih aralığı güncellendi"), 800); }
+}
+$("from").addEventListener("change", onRange);
+$("to").addEventListener("change", onRange);
+
+/* ---------- düzenleme modu ayarları ---------- */
+$("editModeBtn").onclick = () => {
+  const g = guessRepo();
+  $("cOwner").value = cfg.owner || g.owner; $("cRepo").value = cfg.repo || g.repo;
+  $("cToken").value = cfg.token || ""; $("cErr").hidden = true;
+  $("logoutBtn").hidden = !cfg.token; $("ovCfg").hidden = false; $("cOwner").focus();
+};
+$("cCancel").onclick = () => { $("ovCfg").hidden = true; };
+$("ovCfg").addEventListener("click",e=>{ if(e.target.id==="ovCfg") $("ovCfg").hidden = true; });
+$("logoutBtn").onclick = () => { cfg = {}; saveCfg(); $("ovCfg").hidden = true; sha = null; load(); };
+$("cfgForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const next = {owner:$("cOwner").value.trim(), repo:$("cRepo").value.trim(), token:$("cToken").value.trim()};
+  const prev = cfg; cfg = next;
+  try{
+    const r = await gh("GET", `https://api.github.com/repos/${encodeURIComponent(next.owner)}/${encodeURIComponent(next.repo)}`);
+    if(!r.permissions || !r.permissions.push) throw {status:403};
+  }catch(err){
+    cfg = prev;
+    $("cErr").textContent = err.status===404 ? "Depo bulunamadı ya da token bu depoya erişemiyor." : err.status===401 ? "Token geçersiz." : err.status===403 ? "Token'ın bu depoya yazma izni yok." : "GitHub'a ulaşılamadı.";
+    $("cErr").hidden = false; return;
+  }
+  saveCfg(); $("ovCfg").hidden = true; load();
+});
+
+load();
+setInterval(render, 5*60*1000);
+</script>
+</body>
+</html>

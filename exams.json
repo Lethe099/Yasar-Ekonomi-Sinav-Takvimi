@@ -1,0 +1,42 @@
+{
+  "from": "2026-10-26",
+  "to": "2026-11-15",
+  "exams": [
+    {
+      "id": "ex3319",
+      "title": "3319",
+      "date": "2026-10-30",
+      "start": "13:00",
+      "end": "14:00",
+      "note": "",
+      "color": 3
+    },
+    {
+      "id": "ec1120",
+      "title": "EC 1120",
+      "date": "2026-11-03",
+      "start": "18:40",
+      "end": "19:30",
+      "note": "",
+      "color": 1
+    },
+    {
+      "id": "ec3317",
+      "title": "EC 3317",
+      "date": "2026-11-06",
+      "start": "16:00",
+      "end": "17:00",
+      "note": "International Economics · Gözetmensiz · bitiş saati belirsiz",
+      "color": 2
+    },
+    {
+      "id": "ec1101",
+      "title": "EC 1101",
+      "date": "2026-11-13",
+      "start": "18:40",
+      "end": "20:30",
+      "note": "",
+      "color": 4
+    }
+  ]
+}
