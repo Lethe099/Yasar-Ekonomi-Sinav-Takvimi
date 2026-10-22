@@ -62,7 +62,7 @@ button.link{border:0;background:none;padding:0;color:var(--muted);text-decoratio
 .week{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
 .week-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
 .week-h h2{margin:0;font-size:1rem;font-weight:700}
-.week-h span{color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
+.week-h > span{color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
 .scroller{overflow-x:auto}
 .grid{display:grid;grid-template-columns:64px repeat(7,minmax(110px,1fr));min-width:840px}
 .dh{padding:8px 6px;text-align:center;border-left:1px solid var(--line);border-bottom:1px solid var(--line-strong);background:var(--accent-soft)}
@@ -83,8 +83,30 @@ body.editor .col{cursor:copy}
 .blk:hover{box-shadow:0 0 0 2px var(--fg)}
 .k1{background:var(--c1);color:var(--c1t)} .k2{background:var(--c2);color:var(--c2t)} .k3{background:var(--c3);color:var(--c3t)}
 .k4{background:var(--c4);color:var(--c4t)} .k5{background:var(--c5);color:var(--c5t)} .k6{background:var(--c6);color:var(--c6t)}
-.now{position:absolute;left:0;right:0;height:2px;background:var(--c5);pointer-events:none}
+.now{position:absolute;left:0;right:0;height:2px;background:var(--c5);pointer-events:none;z-index:1}
 .now::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--c5)}
+.now.faint{opacity:.35}
+.now.faint::before{display:none}
+.times .nowlab{color:var(--c5);font-weight:700;background:var(--surface);transform:translateY(-50%);padding:1px 0;z-index:2}
+.badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--c5);color:#fff;font-size:.66rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;vertical-align:1px}
+
+/* zaman çizelgesi */
+.timeline{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding-block:14px 12px;padding-inline:20px;overflow:hidden}
+.tl-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px;margin-bottom:48px}
+.tl-top b{font-size:1rem}
+.tl-top span{color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
+.tl{position:relative;height:8px;border-radius:4px;background:var(--line);margin-bottom:62px}
+.tl-fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px 0 0 4px;background:var(--c5);opacity:.25}
+.tl-tick{position:absolute;top:-4px;bottom:-4px;width:1px;background:var(--line-strong)}
+.tl-ex{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;transform:translate(-50%,-50%);border:2px solid var(--surface);cursor:pointer;padding:0}
+.tl-ex.past{opacity:.45}
+.tl-lab{position:absolute;font-size:.72rem;font-weight:700;white-space:nowrap;color:var(--fg);line-height:1.15;text-align:center}
+.tl-lab small{display:block;font-weight:500;color:var(--muted);font-family:var(--f-num);font-size:.66rem}
+.tl-lab.r1{top:14px} .tl-lab.r2{top:40px}
+.tl-today{position:absolute;top:-24px;bottom:-6px;width:3px;margin-left:-1.5px;background:var(--c5);border-radius:2px;z-index:2}
+.tl-today span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:var(--c5);color:#fff;font-size:.68rem;font-weight:800;padding:1px 7px;border-radius:999px;white-space:nowrap}
+.tl-today.at-start span{transform:none;left:-2px} .tl-today.at-end span{transform:translateX(-100%);left:5px}
+.tl-ends{display:flex;justify-content:space-between;color:var(--muted);font-size:.72rem;font-family:var(--f-num);border-top:1px dashed var(--line);padding-top:6px}
 
 footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;color:var(--muted);font-size:.85rem}
 
@@ -119,6 +141,7 @@ footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;color:
     </div>
   </header>
 
+  <section class="timeline" id="timeline" aria-label="Zaman çizelgesi"></section>
   <section class="upcoming" id="upcoming" aria-label="Sıradaki sınavlar"></section>
   <div id="weeks" style="display:flex;flex-direction:column;gap:20px"></div>
 
@@ -295,16 +318,24 @@ function render(){
         <span class="left">${left}</span></button>`;
     }).join("");
 
+  renderTimeline(sorted, today, now);
+
   const H = (DAY1-DAY0)*PX;
-  const start = mondayOf(parse(state.from));
+  const todayD = parse(today);
+  let start = mondayOf(parse(state.from));
   let end = parse(state.to); if(end < start) end = addDays(start,6);
+  if(todayD < start && todayD <= end) start = mondayOf(todayD); // bugünün haftasını da göster
+  const showNow = nowMin>DAY0 && nowMin<DAY1;
+  const scrolls = [...document.querySelectorAll(".scroller")].map(s=>s.scrollLeft);
   let html = "", wk = 0;
   for(let m = start; m <= end && wk < 12; m = addDays(m,7), wk++){
     const sun = addDays(m,6);
+    const thisWeek = today>=iso(m) && today<=iso(sun);
     let cols = `<div class="dh corner"></div>`;
-    for(let i=0;i<7;i++){ const d=addDays(m,i); cols += `<div class="dh${iso(d)===today?" today":""}"><div class="n">${DAYS[i]}</div><div class="dt">${fmt(d)}</div></div>`; }
+    for(let i=0;i<7;i++){ const d=addDays(m,i), isT=iso(d)===today; cols += `<div class="dh${isT?" today":""}"><div class="n">${DAYS[i]}${isT?'<span class="badge">Bugün</span>':""}</div><div class="dt">${fmt(d)}</div></div>`; }
     let times = "";
     for(let t=DAY0; t<DAY1; t+=60) times += `<div style="top:${(t-DAY0)*PX}px">${hm(t)}</div>`;
+    if(thisWeek && showNow) times += `<div class="nowlab" style="top:${(nowMin-DAY0)*PX}px">${hm(nowMin)}</div>`;
     cols += `<div class="times" style="height:${H}px">${times}</div>`;
     for(let i=0;i<7;i++){
       const ds = iso(addDays(m,i));
@@ -313,14 +344,56 @@ function render(){
         return `<button type="button" class="blk k${e.color}" data-id="${esc(e.id)}" style="top:${(s-DAY0)*PX}px;height:${(en-s)*PX-2}px">
           <span class="bt">${esc(e.title)}</span><span class="bs">${e.start}–${e.end}</span>${e.note?`<span class="bn">${esc(e.note)}</span>`:""}</button>`;
       }).join("");
-      if(ds===today && nowMin>DAY0 && nowMin<DAY1) inner += `<div class="now" style="top:${(nowMin-DAY0)*PX}px"></div>`;
+      if(thisWeek && showNow) inner += `<div class="now${ds===today?"":" faint"}" style="top:${(nowMin-DAY0)*PX}px"></div>`;
       cols += `<div class="col${ds===today?" today":""}${i>4?" weekend":""}" data-date="${ds}" style="height:${H}px;background-size:100% ${60*PX}px">${inner}</div>`;
     }
     const count = state.exams.filter(e=>e.date>=iso(m)&&e.date<=iso(sun)).length;
-    html += `<section class="week"><div class="week-h"><h2>${wk+1}. hafta</h2><span>${fmt(m)} – ${fmt(sun)} · ${count} sınav</span></div>
+    html += `<section class="week"><div class="week-h"><h2>${wk+1}. hafta${thisWeek?'<span class="badge">Bu hafta</span>':""}</h2><span>${fmt(m)} – ${fmt(sun)} · ${count} sınav</span></div>
       <div class="scroller"><div class="grid">${cols}</div></div></section>`;
   }
   $("weeks").innerHTML = html;
+  document.querySelectorAll(".scroller").forEach((s,i)=>{ if(scrolls[i]) s.scrollLeft = scrolls[i]; });
+}
+
+function renderTimeline(sorted, today, now){
+  const todayD = parse(today);
+  let a = parse(state.from), b = parse(state.to);
+  if(sorted.length){ const f = parse(sorted[0].date), l = parse(sorted[sorted.length-1].date); if(f<a) a=f; if(l>b) b=l; }
+  if(todayD < a) a = todayD;
+  if(todayD > b) b = todayD;
+  const span = (addDays(b,1) - a);
+  const pct = d => Math.max(0, Math.min(100, (d - a) / span * 100));
+  const nowPct = pct(new Date(todayD.getFullYear(), todayD.getMonth(), todayD.getDate(), now.getHours(), now.getMinutes()));
+  const align = p => p < 8 ? "left:0" : p > 92 ? "right:0" : `left:${p}%;transform:translateX(-50%)`;
+
+  let ticks = "";
+  for(let d = mondayOf(addDays(a,7)); d <= b; d = addDays(d,7)) ticks += `<div class="tl-tick" style="left:${pct(d)}%"></div>`;
+
+  const nowMin = now.getHours()*60+now.getMinutes();
+  let row = 0;
+  const marks = sorted.map(e=>{
+    const d = parse(e.date);
+    const p = pct(new Date(d.getFullYear(), d.getMonth(), d.getDate(), ...e.start.split(":").map(Number)));
+    const past = e.date < today || (e.date === today && mins(e.end) < nowMin);
+    const r = (row++ % 2) ? "r2" : "r1";
+    const lp = p < 8 ? `left:calc(${p}% - 7px)` : p > 92 ? `right:calc(${100-p}% - 7px)` : `left:${p}%;transform:translateX(-50%)`;
+    return `<button type="button" class="tl-ex k${e.color}${past?" past":""}" data-id="${esc(e.id)}" style="left:${p}%" aria-label="${esc(e.title)}"></button>
+      <div class="tl-lab ${r}" style="${lp}">${esc(e.title)}<small>${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}</small></div>`;
+  }).join("");
+
+  const next = sorted.find(e => e.date > today || (e.date === today && mins(e.end) >= nowMin));
+  let info = "Tüm sınavlar bitti";
+  if(next){ const n = Math.round((parse(next.date) - todayD)/864e5); info = n === 0 ? `Bugün sınav var: ${next.title}` : `Sıradaki sınava ${n} gün: ${next.title}`; }
+
+  const edge = nowPct < 6 ? " at-start" : nowPct > 94 ? " at-end" : "";
+  $("timeline").innerHTML = `
+    <div class="tl-top"><b>Bugün ${todayD.getDate()} ${MONTHS[todayD.getMonth()]} ${DAYS[(todayD.getDay()+6)%7]}</b><span>${esc(info)}</span></div>
+    <div class="tl">
+      <div class="tl-fill" style="width:${nowPct}%"></div>
+      ${ticks}${marks}
+      <div class="tl-today${edge}" style="left:${nowPct}%"><span>Bugün</span></div>
+    </div>
+    <div class="tl-ends"><span>${fmt(a)}</span><span>${fmt(b)}</span></div>`;
 }
 
 /* ---------- sınav formu ---------- */
@@ -416,7 +489,7 @@ $("cfgForm").addEventListener("submit", async e=>{
 });
 
 load();
-setInterval(render, 5*60*1000);
+setInterval(render, 60*1000); // çizgiler dakikada bir ilerlesin
 </script>
 </body>
 </html>
