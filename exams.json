@@ -9,7 +9,16 @@
       "start": "13:00",
       "end": "14:00",
       "note": "",
-      "color": 3
+      "color": 7
+    },
+    {
+      "id": "ec3399",
+      "title": "EC 3399",
+      "date": "2026-11-03",
+      "start": "10:40",
+      "end": "12:10",
+      "note": "Public Economics vize · ders saatinde · süre 60–90 dk (kesin değil)",
+      "color": 7
     },
     {
       "id": "ec1120",
@@ -18,7 +27,7 @@
       "start": "18:40",
       "end": "19:30",
       "note": "",
-      "color": 1
+      "color": 7
     },
     {
       "id": "ec3317",
@@ -27,7 +36,7 @@
       "start": "16:00",
       "end": "17:00",
       "note": "International Economics · Gözetmensiz · bitiş saati belirsiz",
-      "color": 2
+      "color": 7
     },
     {
       "id": "ec1101",
@@ -36,24 +45,14 @@
       "start": "18:40",
       "end": "20:30",
       "note": "",
-      "color": 4
+      "color": 7
     },
     {
-      "id": "o-ufndyökzorunlu-1121",
-      "title": "UFND / YÖK Zorunlu (HIST, ISG, TURK)",
-      "date": "2026-11-21",
-      "start": "09:00",
-      "end": "20:30",
-      "note": "",
-      "color": 6,
-      "other": true
-    },
-    {
-      "id": "o-ufndyökzorunlu-1122",
-      "title": "UFND / YÖK Zorunlu (HIST, ISG, TURK)",
-      "date": "2026-11-22",
-      "start": "09:00",
-      "end": "20:30",
+      "id": "o-sofl1102-1104",
+      "title": "SOFL 1102",
+      "date": "2026-11-04",
+      "start": "17:40",
+      "end": "19:30",
       "note": "",
       "color": 6,
       "other": true
@@ -69,9 +68,79 @@
       "other": true
     },
     {
-      "id": "o-sofl1102-1104",
-      "title": "SOFL 1102",
-      "date": "2026-11-04",
+      "id": "o-math1113-1106",
+      "title": "MATH 1113",
+      "date": "2026-11-06",
+      "start": "17:40",
+      "end": "19:30",
+      "note": "",
+      "color": 6,
+      "other": true
+    },
+    {
+      "id": "o-math1103-1106",
+      "title": "MATH 1103",
+      "date": "2026-11-06",
+      "start": "17:40",
+      "end": "19:30",
+      "note": "",
+      "color": 6,
+      "other": true
+    },
+    {
+      "id": "o-math2260-1106",
+      "title": "MATH 2260",
+      "date": "2026-11-06",
+      "start": "19:40",
+      "end": "21:30",
+      "note": "",
+      "color": 6,
+      "other": true
+    },
+    {
+      "id": "o-math1131-1109",
+      "title": "MATH 1131",
+      "date": "2026-11-09",
+      "start": "17:40",
+      "end": "19:30",
+      "note": "",
+      "color": 6,
+      "other": true
+    },
+    {
+      "id": "o-engr4411-1109",
+      "title": "ENGR 4411",
+      "date": "2026-11-09",
+      "start": "19:40",
+      "end": "21:30",
+      "note": "",
+      "color": 6,
+      "other": true
+    },
+    {
+      "id": "o-engr1115-1110",
+      "title": "ENGR 1115",
+      "date": "2026-11-10",
+      "start": "17:40",
+      "end": "19:30",
+      "note": "",
+      "color": 6,
+      "other": true
+    },
+    {
+      "id": "o-engr3450-1110",
+      "title": "ENGR 3450",
+      "date": "2026-11-10",
+      "start": "19:40",
+      "end": "21:30",
+      "note": "",
+      "color": 6,
+      "other": true
+    },
+    {
+      "id": "o-math2255-1111",
+      "title": "MATH 2255",
+      "date": "2026-11-11",
       "start": "17:40",
       "end": "19:30",
       "note": "",
@@ -99,81 +168,11 @@
       "other": true
     },
     {
-      "id": "o-engr1115-1110",
-      "title": "ENGR 1115",
-      "date": "2026-11-10",
-      "start": "17:40",
-      "end": "19:30",
-      "note": "",
-      "color": 6,
-      "other": true
-    },
-    {
-      "id": "o-engr3450-1110",
-      "title": "ENGR 3450",
-      "date": "2026-11-10",
-      "start": "19:40",
-      "end": "21:30",
-      "note": "",
-      "color": 6,
-      "other": true
-    },
-    {
-      "id": "o-engr4411-1109",
-      "title": "ENGR 4411",
-      "date": "2026-11-09",
-      "start": "19:40",
-      "end": "21:30",
-      "note": "",
-      "color": 6,
-      "other": true
-    },
-    {
       "id": "o-math1100-1112",
       "title": "MATH 1100",
       "date": "2026-11-12",
       "start": "18:40",
       "end": "19:30",
-      "note": "",
-      "color": 6,
-      "other": true
-    },
-    {
-      "id": "o-math1131-1109",
-      "title": "MATH 1131",
-      "date": "2026-11-09",
-      "start": "17:40",
-      "end": "19:30",
-      "note": "",
-      "color": 6,
-      "other": true
-    },
-    {
-      "id": "o-math2255-1111",
-      "title": "MATH 2255",
-      "date": "2026-11-11",
-      "start": "17:40",
-      "end": "19:30",
-      "note": "",
-      "color": 6,
-      "other": true
-    },
-    {
-      "id": "o-phys1121-1115",
-      "title": "PHYS 1121",
-      "date": "2026-11-15",
-      "start": "13:40",
-      "end": "15:30",
-      "note": "",
-      "color": 6,
-      "other": true
-    },
-    {
-      "id": "o-math2260-1106",
-      "title": "MATH 2260",
-      "date": "2026-11-06",
-      "start": "19:40",
-      "end": "21:30",
       "note": "",
       "color": 6,
       "other": true
@@ -189,21 +188,31 @@
       "other": true
     },
     {
-      "id": "o-math1113-1106",
-      "title": "MATH 1113",
-      "date": "2026-11-06",
-      "start": "17:40",
-      "end": "19:30",
+      "id": "o-phys1121-1115",
+      "title": "PHYS 1121",
+      "date": "2026-11-15",
+      "start": "13:40",
+      "end": "15:30",
       "note": "",
       "color": 6,
       "other": true
     },
     {
-      "id": "o-math1103-1106",
-      "title": "MATH 1103",
-      "date": "2026-11-06",
-      "start": "17:40",
-      "end": "19:30",
+      "id": "o-ufndyökzorunlu-1121",
+      "title": "UFND / YÖK Zorunlu (HIST, ISG, TURK)",
+      "date": "2026-11-21",
+      "start": "09:00",
+      "end": "20:30",
+      "note": "",
+      "color": 6,
+      "other": true
+    },
+    {
+      "id": "o-ufndyökzorunlu-1122",
+      "title": "UFND / YÖK Zorunlu (HIST, ISG, TURK)",
+      "date": "2026-11-22",
+      "start": "09:00",
+      "end": "20:30",
       "note": "",
       "color": 6,
       "other": true

@@ -12,7 +12,7 @@
   --bg:#f3f5f8; --surface:#ffffff; --fg:#17202e; --muted:#5d6878; --line:#dde2ea; --line-strong:#b9c1cd;
   --accent:#2f5fd0; --accent-fg:#ffffff; --accent-soft:#e3eafb; --today:#fff7d6;
   --c1:#f7d64a; --c1t:#3a2f00; --c2:#7cc06a; --c2t:#10300a; --c3:#6fa3e8; --c3t:#0b2246;
-  --c4:#f08a4b; --c4t:#3d1500; --c5:#ef5b5b; --c5t:#3d0606; --c6:#4fd3e6; --c6t:#032f36;
+  --c4:#f08a4b; --c4t:#3d1500; --c5:#ef5b5b; --c5t:#3d0606; --c6:#4fd3e6; --c6t:#032f36; --c7:#187a50; --c7t:#ffffff; /* c7: ekonomi (EC) yeşili */
   --shadow:0 1px 2px rgba(20,30,50,.08),0 6px 20px rgba(20,30,50,.06);
   --f-ui:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-num:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
@@ -21,7 +21,7 @@
 @media (prefers-color-scheme:dark){:root{
   --bg:#11151c; --surface:#181e27; --fg:#e7ebf2; --muted:#98a3b4; --line:#262e3a; --line-strong:#3a4452;
   --accent:#7aa2ff; --accent-fg:#0b1220; --accent-soft:#1d2840; --today:#2a2614;
-  --c1:#d9b92c; --c2:#5fa451; --c3:#4f86cf; --c4:#d6703a; --c5:#d24a4a; --c6:#33b4c6;
+  --c1:#d9b92c; --c2:#5fa451; --c3:#4f86cf; --c4:#d6703a; --c5:#d24a4a; --c6:#33b4c6; --c7:#2a8f62;
   --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark}}
 
 *{box-sizing:border-box}
@@ -82,7 +82,7 @@ body.editor .col{cursor:copy}
 .blk .bn{font-size:.72rem;font-weight:600;opacity:.9}
 .blk:hover{box-shadow:0 0 0 2px var(--fg)}
 .k1{background:var(--c1);color:var(--c1t)} .k2{background:var(--c2);color:var(--c2t)} .k3{background:var(--c3);color:var(--c3t)}
-.k4{background:var(--c4);color:var(--c4t)} .k5{background:var(--c5);color:var(--c5t)} .k6{background:var(--c6);color:var(--c6t)}
+.k4{background:var(--c4);color:var(--c4t)} .k5{background:var(--c5);color:var(--c5t)} .k6{background:var(--c6);color:var(--c6t)} .k7{background:var(--c7);color:var(--c7t)}
 .now{position:absolute;left:0;right:0;height:2px;background:var(--c5);pointer-events:none;z-index:1}
 .now::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--c5)}
 .now.faint{opacity:.35}
@@ -308,6 +308,8 @@ async function load(){
 }
 
 /* ---------- çizim ---------- */
+// EC kodlu (ekonomi) sınavlar her zaman aynı yeşille gösterilir
+const colorOf = e => /^EC\b/i.test((e.title||"").trim()) ? 7 : e.color;
 function render(){
   const today = iso(new Date());
   const now = new Date(), nowMin = now.getHours()*60+now.getMinutes();
@@ -322,7 +324,7 @@ function render(){
       const past = diff<0 || (diff===0 && mins(e.end)<nowMin);
       const left = past ? "geçti" : diff===0 ? "<b>Bugün</b>" : `<b>${diff}</b>gün`;
       return `<button type="button" class="up${past?" past":""}" data-id="${esc(e.id)}">
-        <span class="sw k${e.color}"></span>
+        <span class="sw k${colorOf(e)}"></span>
         <span><span class="t">${esc(e.title)}</span><br><span class="d">${fmt(d)} ${DAYS[(d.getDay()+6)%7].slice(0,3)} · ${e.start}–${e.end}</span></span>
         <span class="left">${left}</span></button>`;
     }).join("");
@@ -354,7 +356,7 @@ function render(){
         const s=Math.max(mins(e.start),DAY0), en=Math.min(Math.max(mins(e.end),s+20),DAY1);
         let pos = "";
         if(e.other){ const L = lanes.get(e); pos = `left:calc(${L.i/L.n*100}% + 2px);right:auto;width:calc(${100/L.n}% - 4px);`; }
-        return `<button type="button" class="blk ${e.other?"other":"mine k"+e.color}" data-id="${esc(e.id)}" style="${pos}top:${(s-DAY0)*PX}px;height:${(en-s)*PX-2}px" title="${esc(e.title)} · ${e.start}–${e.end}">
+        return `<button type="button" class="blk ${e.other?"other":"mine k"+colorOf(e)}" data-id="${esc(e.id)}" style="${pos}top:${(s-DAY0)*PX}px;height:${(en-s)*PX-2}px" title="${esc(e.title)} · ${e.start}–${e.end}">
           <span class="bt">${esc(e.title)}</span><span class="bs">${e.start}–${e.end}</span>${e.note&&!e.other?`<span class="bn">${esc(e.note)}</span>`:""}</button>`;
       }).join("");
       if(thisWeek && showNow) inner += `<div class="now${ds===today?"":" faint"}" style="top:${(nowMin-DAY0)*PX}px"></div>`;
@@ -407,7 +409,7 @@ function renderTimeline(sorted, today, now){
     const past = e.date < today || (e.date === today && mins(e.end) < nowMin);
     const r = (row++ % 2) ? "r2" : "r1";
     const lp = p < 8 ? `left:calc(${p}% - 7px)` : p > 92 ? `right:calc(${100-p}% - 7px)` : `left:${p}%;transform:translateX(-50%)`;
-    return `<button type="button" class="tl-ex k${e.color}${past?" past":""}" data-id="${esc(e.id)}" style="left:${p}%" aria-label="${esc(e.title)}"></button>
+    return `<button type="button" class="tl-ex k${colorOf(e)}${past?" past":""}" data-id="${esc(e.id)}" style="left:${p}%" aria-label="${esc(e.title)}"></button>
       <div class="tl-lab ${r}" style="${lp}">${esc(e.title)}<small>${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}</small></div>`;
   }).join("");
 
@@ -429,7 +431,7 @@ function renderTimeline(sorted, today, now){
 /* ---------- sınav formu ---------- */
 let editing = null, pickColor = 1;
 function swatches(){
-  $("sw").innerHTML = [1,2,3,4,5,6].map(c=>`<button type="button" class="k${c}" aria-label="Renk ${c}" aria-pressed="${c===pickColor}" data-c="${c}"></button>`).join("");
+  $("sw").innerHTML = [1,2,3,4,5,6,7].map(c=>`<button type="button" class="k${c}" aria-label="Renk ${c}" aria-pressed="${c===pickColor}" data-c="${c}"></button>`).join("");
 }
 $("sw").addEventListener("click",e=>{ const b=e.target.closest("[data-c]"); if(b){pickColor=+b.dataset.c;swatches();} });
 function resetDel(){ $("delBtn").dataset.confirm=""; $("delBtn").textContent="Sil"; }
