@@ -124,6 +124,14 @@ footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;color:
 .actions .sp{margin-right:auto}
 .err{color:var(--c5);font-size:.85rem;margin:0}
 @media (prefers-reduced-motion:no-preference){.blk{transition:box-shadow .12s}}
+/* diğer bölümlerin sınavları: soluk gri, arkada */
+.blk.other{background:var(--bg);color:var(--muted);border:1px dashed var(--line-strong);opacity:.6;z-index:0;padding:2px 4px}
+.blk.other .bt{font-size:.7rem;font-weight:600}
+.blk.other .bs{font-size:.62rem;font-weight:500}
+.blk.other:hover{opacity:1}
+.blk.mine{z-index:2}
+.check{display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--fg)}
+.check input{width:16px;height:16px}
 </style>
 </head>
 <body>
@@ -162,6 +170,7 @@ footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;color:
       <div class="field"><label for="fEnd">Bitiş</label><input type="time" id="fEnd" required step="300"></div>
     </div>
     <div class="field"><label for="fNote">Not</label><input id="fNote" placeholder="ör. Gözetmensiz, T-304"></div>
+    <label class="check" for="fOther"><input type="checkbox" id="fOther"> Başka bölümün sınavı (soluk gri gösterilir)</label>
     <div class="field" id="swField"><label>Renk</label><div class="swatches" id="sw"></div></div>
     <p class="err" id="err" hidden></p>
     <div class="actions">
@@ -304,7 +313,7 @@ function render(){
   const now = new Date(), nowMin = now.getHours()*60+now.getMinutes();
   $("sub").textContent = editor ? "Boş bir yere tıkla, sınav ekle; bloğa tıkla, düzenle." : "Bir sınava tıklayarak ayrıntısını görebilirsin.";
 
-  const sorted = [...state.exams].sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
+  const sorted = state.exams.filter(e=>!e.other).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
   $("upcoming").innerHTML = !sorted.length
     ? `<p class="empty">${loaded ? (editor ? "Henüz sınav yok. Takvimde boş bir yere tıklayarak ilk sınavı ekle." : "Henüz sınav eklenmemiş.") : "Sınavlar yükleniyor…"}</p>`
     : sorted.map(e=>{
@@ -339,20 +348,41 @@ function render(){
     cols += `<div class="times" style="height:${H}px">${times}</div>`;
     for(let i=0;i<7;i++){
       const ds = iso(addDays(m,i));
-      let inner = state.exams.filter(e=>e.date===ds).map(e=>{
+      const dayEx = state.exams.filter(e=>e.date===ds);
+      const lanes = layoutLanes(dayEx.filter(e=>e.other));
+      let inner = dayEx.map(e=>{
         const s=Math.max(mins(e.start),DAY0), en=Math.min(Math.max(mins(e.end),s+20),DAY1);
-        return `<button type="button" class="blk k${e.color}" data-id="${esc(e.id)}" style="top:${(s-DAY0)*PX}px;height:${(en-s)*PX-2}px">
-          <span class="bt">${esc(e.title)}</span><span class="bs">${e.start}–${e.end}</span>${e.note?`<span class="bn">${esc(e.note)}</span>`:""}</button>`;
+        let pos = "";
+        if(e.other){ const L = lanes.get(e); pos = `left:calc(${L.i/L.n*100}% + 2px);right:auto;width:calc(${100/L.n}% - 4px);`; }
+        return `<button type="button" class="blk ${e.other?"other":"mine k"+e.color}" data-id="${esc(e.id)}" style="${pos}top:${(s-DAY0)*PX}px;height:${(en-s)*PX-2}px" title="${esc(e.title)} · ${e.start}–${e.end}">
+          <span class="bt">${esc(e.title)}</span><span class="bs">${e.start}–${e.end}</span>${e.note&&!e.other?`<span class="bn">${esc(e.note)}</span>`:""}</button>`;
       }).join("");
       if(thisWeek && showNow) inner += `<div class="now${ds===today?"":" faint"}" style="top:${(nowMin-DAY0)*PX}px"></div>`;
       cols += `<div class="col${ds===today?" today":""}${i>4?" weekend":""}" data-date="${ds}" style="height:${H}px;background-size:100% ${60*PX}px">${inner}</div>`;
     }
-    const count = state.exams.filter(e=>e.date>=iso(m)&&e.date<=iso(sun)).length;
+    const count = state.exams.filter(e=>!e.other&&e.date>=iso(m)&&e.date<=iso(sun)).length;
     html += `<section class="week"><div class="week-h"><h2>${wk+1}. hafta${thisWeek?'<span class="badge">Bu hafta</span>':""}</h2><span>${fmt(m)} – ${fmt(sun)} · ${count} sınav</span></div>
       <div class="scroller"><div class="grid">${cols}</div></div></section>`;
   }
   $("weeks").innerHTML = html;
   document.querySelectorAll(".scroller").forEach((s,i)=>{ if(scrolls[i]) s.scrollLeft = scrolls[i]; });
+}
+
+// Aynı saatte çakışan sınavları yan yana şeritlere böl
+function layoutLanes(list){
+  const out = new Map();
+  const ev = [...list].sort((a,b)=>mins(a.start)-mins(b.start) || mins(b.end)-mins(a.end));
+  let cluster = [], laneEnds = [], clusterEnd = -1;
+  const flush = () => { cluster.forEach(c=>out.set(c.e,{i:c.i,n:laneEnds.length})); cluster = []; laneEnds = []; };
+  for(const e of ev){
+    const s = mins(e.start), en = mins(e.end);
+    if(s >= clusterEnd){ flush(); clusterEnd = en; } else clusterEnd = Math.max(clusterEnd, en);
+    let i = laneEnds.findIndex(x=>x<=s);
+    if(i<0){ i = laneEnds.length; laneEnds.push(en); } else laneEnds[i] = en;
+    cluster.push({e,i});
+  }
+  flush();
+  return out;
 }
 
 function renderTimeline(sorted, today, now){
@@ -413,6 +443,7 @@ function openModal(ex, preset={}){
   $("fStart").value = ex?ex.start:(preset.start||"10:40");
   $("fEnd").value = ex?ex.end:(preset.end||"11:30");
   pickColor = ex?ex.color:((state.exams.length%6)+1);
+  $("fOther").checked = !!(ex && ex.other); $("fOther").disabled = ro;
   $("swField").hidden = ro; $("saveBtn").hidden = ro;
   $("delBtn").hidden = ro || !ex; $("err").hidden = true;
   $("cancelBtn").textContent = ro ? "Kapat" : "Vazgeç";
@@ -433,6 +464,7 @@ $("form").addEventListener("submit",e=>{
   e.preventDefault();
   if(!editor) return closeModal();
   const v = {title:$("fTitle").value.trim(), date:$("fDate").value, start:$("fStart").value, end:$("fEnd").value, note:$("fNote").value.trim(), color:pickColor};
+  if($("fOther").checked) v.other = true; else if(editing) delete editing.other;
   if(mins(v.end) <= mins(v.start)){ $("err").textContent="Bitiş saati başlangıçtan sonra olmalı."; $("err").hidden=false; return; }
   let msg;
   if(editing){ Object.assign(editing,v); msg = `${v.title} sınavı güncellendi`; }
