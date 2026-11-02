@@ -8,6 +8,10 @@
       "date": "2026-10-30",
       "start": "13:00",
       "end": "14:00",
+      "name": "Money, Banking and Financial Markets",
+      "room": "T-114",
+      "instructor": "Serpil Kahraman",
+      "proctor": "Batuhan Altunkaynak",
       "note": "",
       "color": 7
     },
@@ -17,7 +21,12 @@
       "date": "2026-11-03",
       "start": "10:40",
       "end": "12:10",
-      "note": "Public Economics vize · ders saatinde · süre 60–90 dk (kesin değil)",
+      "approx": true,
+      "name": "Public Economics",
+      "room": "T-104",
+      "instructor": "Tuğçe Uygurtürk Gazel",
+      "proctor": "Tuğçe Uygurtürk Gazel",
+      "note": "Ders saatinde · süre 60–90 dk",
       "color": 7
     },
     {
@@ -26,6 +35,10 @@
       "date": "2026-11-03",
       "start": "18:40",
       "end": "19:30",
+      "name": "Essentials of Economics",
+      "room": "T-112, T-114, T-212, T-214, T-414, T-416, T-514",
+      "instructor": "Serpil Kahraman, Ali Onur Peker, Deniz Dermenci, Tuğçe Uygurtürk Gazel",
+      "proctor": "Alperen Kızılkulak, Barış Ersoy, Batuhan Altunkaynak, Teoman Köktürk, Merve Keser, Yiğit Gökmen Etik, Burak Çetiner",
       "note": "",
       "color": 7
     },
@@ -34,8 +47,111 @@
       "title": "EC 3317",
       "date": "2026-11-06",
       "start": "16:00",
-      "end": "17:00",
-      "note": "International Economics · Gözetmensiz · bitiş saati belirsiz",
+      "end": "17:50",
+      "approx": true,
+      "name": "International Economics I",
+      "room": "T-304",
+      "instructor": "Serpil Kahraman",
+      "proctor": "Serpil Kahraman",
+      "note": "",
+      "color": 7
+    },
+    {
+      "id": "ec3311",
+      "title": "EC 3311",
+      "date": "2026-11-09",
+      "start": "15:40",
+      "end": "17:30",
+      "approx": true,
+      "name": "Econometrics I",
+      "room": "T-304",
+      "instructor": "Özden Birkan",
+      "proctor": "Batuhan Altunkaynak",
+      "note": "",
+      "color": 7
+    },
+    {
+      "id": "mvyzzdjj",
+      "title": "EC 2205",
+      "date": "2026-11-10",
+      "start": "10:40",
+      "end": "12:30",
+      "approx": true,
+      "name": "Macroeconomics I",
+      "room": "T-304",
+      "instructor": "Durmuş Özdemir",
+      "proctor": "Batuhan Altunkaynak",
+      "note": "",
+      "color": 7
+    },
+    {
+      "id": "ec3361",
+      "title": "EC 3361",
+      "date": "2026-11-10",
+      "start": "15:40",
+      "end": "17:30",
+      "approx": true,
+      "name": "Labour Economics",
+      "room": "T-304",
+      "instructor": "Özden Birkan",
+      "proctor": "Batuhan Altunkaynak",
+      "note": "",
+      "color": 7
+    },
+    {
+      "id": "ec0380",
+      "title": "EC 0380",
+      "date": "2026-11-11",
+      "start": "10:40",
+      "end": "12:30",
+      "approx": true,
+      "name": "Turkish Economy",
+      "room": "T-110",
+      "instructor": "Ali Onur Peker",
+      "proctor": "Ali Onur Peker",
+      "note": "",
+      "color": 7
+    },
+    {
+      "id": "ec1124",
+      "title": "EC 1124",
+      "date": "2026-11-11",
+      "start": "15:40",
+      "end": "17:30",
+      "approx": true,
+      "name": "History of World Economy",
+      "room": "T-114",
+      "instructor": "Ali Onur Peker",
+      "proctor": "Ali Onur Peker",
+      "note": "",
+      "color": 7
+    },
+    {
+      "id": "ec2203",
+      "title": "EC 2203",
+      "date": "2026-11-13",
+      "start": "12:40",
+      "end": "14:30",
+      "approx": true,
+      "name": "Microeconomics I",
+      "room": "T-315",
+      "instructor": "Anıl Aba",
+      "proctor": "Anıl Aba",
+      "note": "",
+      "color": 7
+    },
+    {
+      "id": "ec4472",
+      "title": "EC 4472",
+      "date": "2026-11-13",
+      "start": "15:40",
+      "end": "17:30",
+      "approx": true,
+      "name": "Advanced Topics in Economic Theory",
+      "room": "T-104",
+      "instructor": "Anıl Aba",
+      "proctor": "Anıl Aba",
+      "note": "",
       "color": 7
     },
     {
@@ -44,6 +160,10 @@
       "date": "2026-11-13",
       "start": "18:40",
       "end": "20:30",
+      "name": "Introduction to Economics I",
+      "room": "T-114, T-212, T-214, T-315, T-414, T-416, T-514",
+      "instructor": "Umut Halaç, Anıl Aba, Tuğçe Uygurtürk Gazel",
+      "proctor": "(İşletme Fakültesi Araş. Gör.)",
       "note": "",
       "color": 7
     },
@@ -216,15 +336,43 @@
       "note": "",
       "color": 6,
       "other": true
+    }
+  ],
+  "pending": [
+    {
+      "code": "EC 2111",
+      "name": "Statistics for Economics and Business I",
+      "status": "Tarih belirlenmedi · saat 10:40",
+      "instructor": "Durmuş Özdemir",
+      "proctor": "Batuhan Altunkaynak"
     },
     {
-      "id": "mvyzzdjj",
-      "title": "EC 2205",
-      "date": "2026-11-10",
-      "start": "10:40",
-      "end": "11:30",
-      "note": "Sınıf (ders sınıfında olacak) ve bitiş saati belli değil",
-      "color": 5
+      "code": "EC 4460",
+      "name": "Economic Growth",
+      "status": "Tarih ve saat belirlenmedi",
+      "instructor": "Aykut Lenger",
+      "proctor": "Aykut Lenger"
+    },
+    {
+      "code": "EC 3380",
+      "name": "",
+      "status": "Ara sınav yok · sunum/proje hazırlanıyor",
+      "instructor": "",
+      "proctor": ""
+    },
+    {
+      "code": "EC 4001",
+      "name": "",
+      "status": "Ara sınav yok · sunum/proje hazırlanıyor",
+      "instructor": "",
+      "proctor": ""
+    },
+    {
+      "code": "EC 4390",
+      "name": "",
+      "status": "Ara sınav yok · sunum/proje hazırlanıyor",
+      "instructor": "",
+      "proctor": ""
     }
   ]
 }
