@@ -216,6 +216,15 @@
       "note": "",
       "color": 6,
       "other": true
+    },
+    {
+      "id": "mvyzzdjj",
+      "title": "EC 2205",
+      "date": "2026-11-10",
+      "start": "10:40",
+      "end": "11:30",
+      "note": "Sınıf (ders sınıfında olacak) ve bitiş saati belli değil",
+      "color": 5
     }
   ]
 }
